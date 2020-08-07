@@ -1,20 +1,19 @@
-
 package main
 
 import (
-"context"
+	"context"
+	"errors"
 
-"github.com/jmoiron/sqlx"
-"github.com/nori-io/common/v3/config"
-"github.com/nori-io/common/v3/logger"
-"github.com/nori-io/common/v3/meta"
-"github.com/nori-io/common/v3/plugin"
-i "github.com/nori-io/interfaces/public/sql/sqlx"
+	"github.com/jmoiron/sqlx"
+	"github.com/nori-io/common/v3/config"
+	"github.com/nori-io/common/v3/logger"
+	"github.com/nori-io/common/v3/meta"
+	"github.com/nori-io/common/v3/plugin"
+	i "github.com/nori-io/interfaces/public/sql/sqlx"
 
-_ "github.com/jinzhu/gorm/dialects/mssql"
-_ "github.com/jinzhu/gorm/dialects/mysql"
-_ "github.com/jinzhu/gorm/dialects/postgres"
-_ "github.com/jinzhu/gorm/dialects/sqlite"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type service struct {
@@ -25,19 +24,33 @@ type service struct {
 
 type pluginConfig struct {
 	dsn     string
-	dialect string
+	driver  string
 	logMode bool
 }
 
 var (
-	Plugin plugin.Plugin = &service{}
+	Plugin  plugin.Plugin = &service{}
+	drivers               = [3]string{"mysql", "postgres", "sqlite3"}
 )
 
 func (p *service) Init(ctx context.Context, config config.Config, log logger.FieldLogger) error {
 	p.logger = log
 	p.config.logMode = config.Bool("logMode", "log mode: true or false")()
 	p.config.dsn = config.String("dsn", "database connection string")()
-	p.config.dialect = config.String("dialect", "sql dialect: mssql, mysql, postgres, sqlite")()
+	p.config.driver = config.String("driver", "sql driver: postgres")()
+
+	var isValidDriver bool
+
+	for _, v := range drivers {
+		if v == p.config.driver {
+			isValidDriver = true
+		}
+	}
+
+	if !isValidDriver {
+		return errors.New("Driver is wrong. You should use on of sql drivers: mysql, postgres, sqlite3")
+	}
+
 	return nil
 }
 
@@ -76,7 +89,7 @@ func (p *service) Meta() meta.Meta {
 
 func (p *service) Start(ctx context.Context, registry plugin.Registry) error {
 	var err error
-	p.db, err = sqlx.Open(p.config.dialect, p.config.dsn)
+	p.db, err = sqlx.Open(p.config.driver, p.config.dsn)
 	if err != nil {
 		p.logger.Error(err.Error())
 	}
@@ -90,4 +103,3 @@ func (p *service) Stop(ctx context.Context, registry plugin.Registry) error {
 	}
 	return err
 }
-
