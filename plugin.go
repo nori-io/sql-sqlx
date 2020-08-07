@@ -80,11 +80,6 @@ func (p *service) Start(ctx context.Context, registry plugin.Registry) error {
 	if err != nil {
 		p.logger.Error(err.Error())
 	}
-	/*	else {
-	p.db.LogMode(p.config.logMode)
-		p.db.SetLogger(&hook.Logger{Origin: p.logger})
-	}
-	*/
 	return err
 }
 
@@ -93,7 +88,6 @@ func (p *service) Stop(ctx context.Context, registry plugin.Registry) error {
 	if err != nil {
 		p.logger.Error(err.Error())
 	}
-
 	return err
 }
 
