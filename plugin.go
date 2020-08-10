@@ -35,9 +35,8 @@ var (
 
 func (p *service) Init(ctx context.Context, config config.Config, log logger.FieldLogger) error {
 	p.logger = log
-	p.config.logMode = config.Bool("logMode", "log mode: true or false")()
-	p.config.dsn = config.String("dsn", "database connection string")()
-	p.config.driver = config.String("driver", "sql driver: postgres")()
+	p.config.dsn = config.String("sql.sqlx.dsn", "database connection string")()
+	p.config.driver = config.String("sql.sqlx.driver", "sql driver: postgres")()
 
 	var isValidDriver bool
 
