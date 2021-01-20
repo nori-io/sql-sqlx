@@ -1,8 +1,10 @@
-package plugin
+package main
 
 import (
 	"context"
 	"errors"
+
+	p "github.com/nori-io/common/v4/pkg/domain/plugin"
 
 	"github.com/nori-io/common/v4/pkg/domain/registry"
 
@@ -11,7 +13,6 @@ import (
 	em "github.com/nori-io/common/v4/pkg/domain/enum/meta"
 	"github.com/nori-io/common/v4/pkg/domain/logger"
 	"github.com/nori-io/common/v4/pkg/domain/meta"
-	p "github.com/nori-io/common/v4/pkg/domain/plugin"
 	m "github.com/nori-io/common/v4/pkg/meta"
 
 	i "github.com/nori-io/interfaces/database/sql/sqlx"
@@ -21,10 +22,11 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var (
-	Plugin  p.Plugin = plugin{}
-	drivers          = [3]string{"mysql", "postgres", "sqlite3"}
-)
+var drivers = [3]string{"mysql", "postgres", "sqlite3"}
+
+func New() p.Plugin {
+	return &plugin{}
+}
 
 type plugin struct {
 	db     *sqlx.DB
